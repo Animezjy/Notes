@@ -1,0 +1,226 @@
+day04复习
+配置session 
+#vim /etc/php-fpm.d/www.conf
+php_value[session.save_handler] = memcache
+php_value[session.save_path] = "tcp://192.168.2.5:11211"
+
+
+
+
+day05
+java--------------------------jdk  jre 
+Selevt是java扩展Web服务器功能的组件规范
+常见Sevlet容器   
+IBM     	websphere 
+Oracle  	weblofic   
+Apache	tomcat 	
+RedHat	jboss
+vil553
+
+Tomcat服务器
+概述:Sevlet容器  java开发 （与java语言搭配作为网站服务器软件）
+1.安装tomcat
+tar -xf   apache-tomcat-8.0.30.tar.gz
+mv apache-tomcat-8.0.30 /usr/local/tomcat
+主要目录
+bin/			//主程序目录
+lib/			//库文件目录vil553
+logs/		//日志目录
+temp/		//临时目录
+work/		//自url http://192.168.4.5
+步骤四：其他操作动编译目录jsp代码转换sevlet
+conf/		//配置文件目录
+webapps/		//页面目录
+
+
+启动服务
+/usr/local/bin/tomcat/bin/startup.sh                 
+ss -nlptu | grep java                                //8080 8005 8009
+8005端口启动慢
+mv /dev/random{,.bak}
+ln -s /dev/urandom /dev/random.bak
+
+
+xml格式
+为<a>              属性少
+name=tom
+age=22
+sex=male
+</a><man name=tom />   属性少
+
+2.使用Tomcat配置虚拟主机
+tomcat默认网站根目录为/usr/local/tomcat/webapps/ROOT
+默认首页 web.xml  
+配置文件   /usr/local/tomcat/conf/server.xml
+<Host name="www.a.com" appBase="a" unpackWARS="true" autoDeploy="true">
+</Host>
+<Host name="www.b.com" appBase="b" unpackWARS="true" autoDeploy="true">
+</Host>
+mkdir -p /usr/local/bin/tomcat/a/ROOT
+2)修改网站的首页目录
+eg:www.b.com
+<Context path=" " docBase="base" reloadable="true"/>            //context 跳转功能
+设置加密网站
+ keytool -genkeypair -alias tomcat -keyalg RSA -keystore /usr/local/tomcat/keystore 
+修改配置文件
+<Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+               maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
+               clientAuth="false" sslProtocol="TLS" keystoreFile="/usr/local/tomcat/keystore" keystorePass="123456"/
+
+
+3.配置tomcat日志
+日志目录 /usr/local/tomcat/logs
+<Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="www.a.com_log" suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+4.varnish缓存
+部署varnish缓存服务器
+1）安装依赖包
+gcc pcre-devel readline-devel python-docutils 
+useradd -s /sbin/nologin varnish
+tar -xf varnish-5.2.1.tar.gz
+cd varnish-5.2.1
+./configure
+2)复制配置文件 
+   cp  varnish-5.2.1/etc/example.vcl    /usr/local/etc/default.vcl
+   backend default {
+.host = "192.168.2.100";
+.port = "80";
+}   
+关闭nginx
+启动服务
+varnishd -f /usr/local/etc/default.vcl
+//varnishd –s malloc,128M        定义varnish使用内存作为缓存，空间为128M
+//varnishd –s file,/var/lib/varnish_storage.bin,1G 定义varnish使用文件作为缓存
+3)客户端测试
+4)查看varnish日志
+varnishlog         //查看日志
+varnishncsa      //访问日志
+varnishadm
+varnish> ban req.url ~ .*       //手动清理缓存
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
