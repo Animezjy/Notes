@@ -1,0 +1,129 @@
+day04
+
+SQL存硬盘，数据关系
+数据库---》表
+id name age
+
+pass=123
+
+
+NoSQL:存内存，非关系(mogondb,redis,memcached)
+相互读的时候没有关联性
+独立读写
+
+一、安装memcached服务
+11211端口
+yum -y install memcached
+rpm -qa memcached
+配置
+#vim /usr/lob/systemd/system/memcached.service
+#vim /etc/sysconfig/memcached
+
+二、使用telnet访问memcached
+telnet 192.168.4.5 11211
+
+set name 0 180 3
+0代表数据不压缩 
+180代表只在内存中存180秒
+3代表数据内容为3字节
+get name -------------取数据
+
+add name ---------新建
+replace myname 0 180 10 --------替换	
+append myname 0 180 10  --------向变量中追加内容
+delete myname 删除变量
+flush_all  //清空所有0
+stats     //查看数据库信息
+
+
+
+LNMP(PHP----->memcached) (生产环境)
+
+1.部署lnmp nginx
+2.创建php页面 使用php语言连接memcached服务
+
+
+
+session
+cookie
+
+client --------------------------server
+	1请求--------------------------------------------------->读(uuid文件session)
+	2回应网页内容+头cookie:uuid<------------
+cookie:uuid
+client
+	3.再次访问----------------------------------------->
+		cookie:uuid
+部署测试页面
+cd lnmp_soft/php_scripts/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+远程同步
+#rsync -avz --delete /opt/  root@192.168.4.207:/opt/
+
+
+隐藏Nginx版本号	server_tokens off;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,322 @@
+day02复习
+
+LNMP
+	nginx
+	mariadb mariadb-server mariadb-devel
+	php php-fpm php-mysql
+
+	nginx /etc/rc.local---->/etc/rc.d/rc.local 开机自启动脚本
+
+	nginx动静分离,把php的处理转发给9000
+	location / {
+		root html;
+	}
+	location ~ \.php${
+		root html;
+		fastcgi_pass 127.0.0.1:9000;
+		include factcg.conf;
+	}
+	nginx -s reload
+
+编写脚本php,连接数据库,对数据操作
+
+地址重写
+	a.html	b.html
+        192.168.4.5 ------------>www.tmooc.cn
+rewrite /a.html	/b.html  ----页面跳转,还是同一个网站
+rewrite ^/  http://www.tmooc.cn ;
+rewrite ^/(.*)  http://www.tmooc.cn/$1; --------- 页面保留
+
+一个页面给firefox
+一个页面给curl
+
+
+
+
+
+firefox http://192.168.4.5/test.html
+curl 	  http://192.168.4.5/test.html
+
+firefox http://192.168.4.5/firefox/test.html
+if (如果是firefox){
+ rewrite /test.html /firefox/test.html; 	
+}
+
+地址重写格式
+rewrite 旧地址 新地址
+lastak 不再读其他语句,结束请求Reading: 0 Writing: 1 Waiting: 0 
+
+redirect 临时重定向
+permament 永久重定向
+break不再读其他的rewrite
+
+
+
+
+
+
+
+
+
+
+day03
+
+Nginx反向代理
+
+nginx代理/调度
+负载均衡  健康检查
+
+一 部署实施后端Web服务器
+ryum -y install httpd
+echo "192.468.2.100">> /var/www/html/index.html
+
+二 配置Nginx服务器,添加服务器池,实现反向代理功能
+
+定义集群 在server上面
+upstream webs {
+        server 192.168.2.100:80;
+        server 192.168.2.200:80;
+}
+	location / {
+	proxy_pass http://webs; ---> 优先转发
+	root html;
+	index index.html index.htm;
+	}
+服务器不参与调度
+eg:server 192.168.2.101 down;
+ 	
+
+weight:权重 默认值为1
+max_fails:失败次数
+fail_timeout:失败后20秒后不进行连接
+
+upstream webs {
+        server 192.168.2.100:80;
+        server 192.168.2.200:80 weight=2 max_fails=3 fail_timeout=20;
+
+
+
+				web1(登陆)
+
+client    proxy  	
+				web2 
+
+配置upstream服务器集群的调度
+
+
+
+三 避免用户重复的登陆
+默认算法为轮询
+相同客户端访问相同服务器
+#vim /usr/local/nginx/conf/nginx.conf
+在upstream中添加 ip_hash;
+1.1.1.1 | md5sum-------->16进制数%2
+
+
+upstream webs {
+	ip_hash;
+	server 192.168.2.100:80 weight=2 max_fails=3 fail_timeout=20;
+	server 192.168.2.200:80 weight=1 max_fails=3 fail_timeout=20;
+	server 192.168.2.201 down;
+	}
+
+TCP/UDP调度
+whth-stream
+
+配置
+#vim /usr/local/nginx/conf/nginx.conf
+转发到ssh服务器
+配置到http上面
+
+stream {
+	upstream sshs{
+	server 192.168.2.100:22;
+	server 192.138.2.200:22;
+	}
+	server {
+	listem 2222;(实际写22,实验环境可以不用)
+	proxy_pass sshs;
+		
+	}
+
+
+}
+
+升级
+虚拟主机
+https加密
+lnmp动态
+rewrite地址重写
+代理服务器 (调度,健康检查)
+
+
+四 Nginx常见问题 (调优)
+
+1.常见报错
+http:
+	200 一切正常
+	301 永久重定向
+	302 临时重定向
+	401 用户名或密码错误
+	403 禁止访问
+	404 文件不存在
+	414 请求头部过长
+	500 服务器内部错误
+	502 Bad Gateway (网关错误)
+1)自定义报错
+修改nginx配置文件
+error_page 404  /404.html
+
+
+2.查看服务器状态信息
+1) with-http_stub_status_module ------------------统计并发量
+
+pcre-devel 兼容perl的正则表达式
+
+rhel7  可以用ss 代替netstat
+
+
+location /status {
+
+	stub_status on;
+	#allow ip地址
+	#deny  ip地址
+
+}
+
+Active connections: 1  实时并发量
+server accepts handled requests 
+  4(tcp连接次数)  4 56(发送了多少个请求) 
+
+Reading: 0 Writing: 1 Waiting: 0 
+实时读取      实时写        实时用户等待
+http1.0  一次连接一次请求
+
+http1.1 一次连接多次请求
+keepalive_timeout 30
+
+
+3.优化Nginx并发量
+1)ab -c 200 -n 200 http://192.168.4.5/   进行高并发测试	
+2)修改Nginx配置文件,增加并发量
+[root@proxy ~]# vim /usr/local/nginx/conf/nginx.conf
+.. ..
+worker_processes  2;                    //与CPU核心数量一致
+events {
+worker_connections 65535;        //每个worker最大并发连接数
+use epoll;
+}
+.. ..
+[root@proxy ~]# nginx -s reload
+
+
+3)优化Linux内核参数
+ulimit -a 查看所有属性值
+ulimit -Hn 设置硬限制(临时规则)
+ulimit -Sn 设置软限制(临时规则)
+永久修改 
+#vim /etc/security/limits.conf
+
+* soft nofile 10000
+* hard nofile 10000
+
+4)优化url包头
+http下面
+修改配置文件，增加数据包头部信息
+client_header_buffer_size 1k;---------------默认请求包的容量
+large_client_header_buffers 4 4k; ---------大请求包的最大个数与容量
+
+5)优化缓存
+硬盘-------内存-------L1，L2 (CPU)
+如果访问的是多媒体文件(图片 视频 音频等)
+location ~* /.(jpg|png|gif|mp4|flv|css|js|jpeg|ico|xml)$ {
+
+expires 30d; (30天)
+}
+
+6)日志切割
+mv access.log access2.log
+kill -USER1 `cat nginx.pid` --------------给gninx发消息
+
+7)启用对文件的压缩功能
+小文件不要压缩 多媒体不要压缩	
+http下
+gzip on;  -------开启压缩功能
+gip_min_lenth 1000; ----------最小1000字节()
+gzip_comp_level 4;  ----------压缩比率(4-6之间) 
+gzip_types   
+指定文件压缩 类型参考mime.types
+
+8)服务器内缓存
+http下
+#最大缓存2000个文件，关闭20秒内无请求的文件
+open_file_cache    max=2000 inactive=20s;
+#60s后强制过期
+open_file_cache_valid 60s;
+#最少访问超过5次会被缓存
+open_file_min_uses 5;
+#关闭缓存报错
+open_file_cache_errors off;
+
+
+
+
+
+
+
+
+练习
+http:代理
+	upstream abc {
+	server 1.1.1.1;
+	server 2.2.2.2;
+
+}
+proxy_pass http://abc
+
+tcp/udp代理
+
+--with-stream(TCP/UDP)
+	upstream xxx {
+
+	server 1.1.1.1:3306;
+}
+	proxy_pass xxx;
+
+2优化
+1自定义报错
+	error_page 404 /404.html
+2.查看状态
+	--with-http_stub_status_moudle
+	location aaa {
+	stub_status on;	
+	}
+3.并发量
+	nginx.conf 1024-------50000
+	ulimit -Hn -Sn
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
