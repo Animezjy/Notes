@@ -1,0 +1,193 @@
+day06复习
+
+版本控制
+yum -y install subvertion
+svnadmin create /var/svn/project
+svn import ./当前目录 file:///var/svn/project
+
+vim /var/svn/project/conf/svnserv.conf
+anon=none
+auth=write
+passwd-db=passwd
+=authz
+
+vim passwd
+
+tom = 123456
+
+vim authz
+
+[/]
+tom = rw
+jerry = r
+* = 
+
+
+启动服务:
+svnserve -d -r /var/svn/project
+客户端访问:
+svn --username tom --password 123456 co
+svn://192.168.2.100 code
+
+修改文件
+svn ci -m 'xx'
+svn update
+svn add mkdir mv cp
+svn diff
+svn cat svn://192.168.2.100/文件名
+svn log   看日志
+svn info  看信息
+svn revert
+svn merge -r新版本:旧版本 文件
+svn update
+
+git
+
+git clone https://github.com/账户/仓库
+cd 仓库
+修改代码，文件
+git add .
+git commit -m "xx"
+git push
+git pull
+
+
+
+RPM
+yum -y install
+1.描述信息
+2.对源码安装后的数据压缩RPM
+cp 源码 /root/rpmbuild/SOURCES/
+vim /root/rpmbuild/SPECS/nginx.spec
+描述信息:填空
+%pre安装之前的脚本
+%post安装之后的脚本
+./configure
+make
+make install DESTDIR${buildroot}
+%file
+/usr/local/nginx/*
+%doc
+
+
+
+day07
+	
+VPN(虚拟专用网)
+在公用网络上建立专用私有网络
+
+GRE VPN (只适用Linux)
+
+一、启用GRE模块(client和proxy)
+1)lsmod    //查看当前加载的模块
+
+modprove ip_gre  //加载gre模块
+
+二、配置
+ip tunnel add tun0 mode gre remote 201.1.2.5 \
+ local 201.1.2.10                                    //建立隧道
+
+ip link set tun0 up   //启用隧道 
+
+#为隧道tun0设置本地ip地址(10.10.10.10/24)
+#隧道对面主机ip是(10.10.10.5)
+ip addr add 10.10.10.10/24 peer 10.1010.5/24 dev tun0
+#查看ip配置
+ip addr show
+
+PPTP VPN
+一、装包 pptpd网上下载
+vim /etc/pptpd.conf
+localip 201.1.2.5
+remoteip 192.168.0.1-192.168.0.253
+
+vim /etc/ppp/options.pptpd
+vim /etc/ppp/chap-secerts
+用户名	服务器标记	密码	客户端
+
+echo "1" > /proc/sy s/net/ipv 4/ip_f orward  开启路由转发
+
+iptables - t nat - A POSTROUTING - s 192.168.3.0/24  -j SNAT --to-source 201.1.2.5
+
+
+
+L2TP+IPSec VPN
+
+yum -y install libreswan
+
+/etc/ipsec.conf        主配置文件
+/etc/ipsec.d/*.conf    扩展配置文件
+cat /etc/ipsec.secrets
+
+vim /etc/ipsec.d/mypass.secrets
+vim /etc/xl2tpd/xl2tpd.conf	
+201.1.2.200 %any: PSK “randpass”	
+ss -nlptu |grep pluto
+
+
+
+
+
+
+NTP时间服务器
+
+
+#vim /etc/chrony.conf
+allow 192.168.4.0/24
+local stratum 10
+
+PSSH (并发远程连接)
+远程原理: expect  ssh 
+
+pssh -i 将输出显示出来
+-H host1 host2 host3  按主机连接
+-h host.txt(h后面跟文件)
+-p 指定并发连接数
+-t 设置超时时间
+-o dir 设置标准输出保存的目录
+-e dir 设置错误输出信息保存的目录
+-x     传递参数给ssh
+
+pscp.pssh -r    批量拷贝
+
+批量、多并发从其他主机下载数据到本机
+pslurp 选项和pscp一致
+
+pnuke提供远程杀死进程的功能	
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
