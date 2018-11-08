@@ -91,7 +91,7 @@ ip link set tun0 up   //启用隧道
 
 #为隧道tun0设置本地ip地址(10.10.10.10/24)
 #隧道对面主机ip是(10.10.10.5)
-ip addr add 10.10.10.10/24 peer 10.1010.5/24 dev tun0
+ip addr add 10.10.10.10/24 peer 10.10.10.5/24 dev tun0
 #查看ip配置
 ip addr show
 
